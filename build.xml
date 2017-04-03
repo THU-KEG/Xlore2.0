@@ -80,5 +80,5 @@
             <classpath refid="Xlore2.0.classpath"/>
         </java>
     </target>
-              	
+
 </project>
