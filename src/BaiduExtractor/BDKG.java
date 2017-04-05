@@ -33,9 +33,10 @@ public class BDKG {
     			return;
     		}
         	bdkg.getStatistics(sourceFile);
+        	
         } else if (type.equals("addCategory")) { // -Dtype=addCategory
         	String sourceFile = System.getProperty("inputFile"); // -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json"
-        	String categoryFile = System.getProperty("categoryFile"); // -DcategoryFile="/home/peter/BaiduBaikeDataProcess/new_baidu-instance-concept.dat"
+        	String categoryFile = System.getProperty("subinputFile"); // -DcategoryFile="/home/peter/BaiduBaikeDataProcess/new_baidu-instance-concept.dat"
         	String resultFile = System.getProperty("outputFile");// -DoutputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final_cate.result.json"
     		File input = new File(sourceFile);
     		File cateinput = new File(categoryFile);
@@ -69,10 +70,16 @@ public class BDKG {
         	bdkg.getDumpFile(sourceFile, resultFile);
         } else if (type.equals("getSeparateAttrs")) { // -Dtype=getSeparateAttrs
         	String sourceFile = System.getProperty("inputFile"); // -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json"
+        	String taxonomyFile = System.getProperty("subinputFile"); // -DcategoryFile="/home/peter/BaiduBaikeDataProcess/taxonomy/baidu-taxonomy-20160720.dat"
     		String resultDir = System.getProperty("outputDir");// -DoutputDir="/home/peter/BaiduBaikeDataProcess/separatedAttrs/"
     		File input = new File(sourceFile);
+    		File taxoinput = new File(taxonomyFile);
     		if (input.exists()==false) {
     			System.out.println("FAULT: inputFile has no source file.");
+    			return;
+    		}
+    		if (taxoinput.exists()==false) {
+    			System.out.println("FAULT: taxonomyFile has no source file.");
     			return;
     		}
     		File output = new File(resultDir);
@@ -80,7 +87,7 @@ public class BDKG {
     			System.out.println("WARNING: outputDir doesn't exist. Having been created now.");
     			output.mkdir();
     		}
-        	bdkg.getSeparateAttrs(sourceFile, resultDir);
+        	bdkg.getSeparateAttrs(sourceFile, taxonomyFile, resultDir);
         }
         System.out.println("Done! :D");
     }
@@ -324,47 +331,86 @@ public class BDKG {
         bufferedWriter.close();
     }
     
-    public void getSeparateAttrs(String sourceFile, String resultDir) throws Exception {
+    public void getSeparateAttrs(String sourceFile, String taxonomyFile, String resultDir) throws Exception {
     	BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(sourceFile)));
+    	BufferedReader bufferedReader_taxonomy = new BufferedReader(new FileReader(new File(taxonomyFile)));
     	String outputDir = resultDir;
     	BufferedWriter bufferedWriter_baidu_abstract = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-abstract.dat")));
 //    	BufferedWriter bufferedWriter_baidu_tagList_all = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-tagList-all.dat")));
     	BufferedWriter bufferedWriter_baidu_innerLink = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-innerLink.dat")));
 //    	BufferedWriter bufferedWriter_baidu_instance_tag = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-instance-tag.dat")));
     	BufferedWriter bufferedWriter_baidu_instanceList_all = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-instanceList-all.dat")));
-    	BufferedWriter bufferedWriter_baidu_instanceof = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-instanceof.dat")));
     	BufferedWriter bufferedWriter_baidu_propertyList_all = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-propertyList-all.dat")));
-    	BufferedWriter bufferedWriter_baidu_subclassof = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-subclassof.dat")));
     	BufferedWriter bufferedWriter_baidu_title_property = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-title-property.dat")));
     	BufferedWriter bufferedWriter_baidu_url = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-url.dat")));
     	BufferedWriter bufferedWriter_baidu_synonym = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-synonym.dat")));
     	BufferedWriter bufferedWriter_baidu_instance_concept = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-instance-concept.dat")));
-    	BufferedWriter bufferedWriter_baidu_conceptListAll_all = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-conceptList-all.dat")));
-
-    	int pageCount = 0;
+    	BufferedWriter bufferedWriter_baidu_conceptList_all = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-conceptList-all.dat")));
+    	BufferedWriter bufferedWriter_baidu_instanceof = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-instanceof.dat")));
+    	BufferedWriter bufferedWriter_baidu_subclassof = new BufferedWriter(new FileWriter(new File(outputDir + "baidu-subconceptof.dat"))); // baidu-subclassof.dat
+    	
     	String line = new String();
+    	Set<String> skipInstanceofList = new HashSet<String>();
+    	JSONObject tree = new JSONObject();
+        while (true) {
+        	line = bufferedReader_taxonomy.readLine();
+            if (line == null) {
+                break;
+            }
+            if (tree.has(line.split("\t")[0]) == false) {
+            	tree.put(line.split("\t")[0], new JSONArray(line.split("\t")[1].split(";")));
+            }
+        }
+        List<String> sList = new ArrayList<String>();
+        for (Object lev1 : tree.getJSONArray("Root")) {
+        	sList.add(lev1.toString());
+        }
+        bufferedWriter_baidu_subclassof.write("Root" + "\t" + StringUtils.join(sList, "::;") + "\n");
+        for (Object obj_lev1 : tree.getJSONArray("Root")) {
+        	sList.clear();
+        	String lev1 = obj_lev1.toString();
+        	skipInstanceofList.add(obj_lev1.toString());
+        	if (tree.has(lev1)) {
+        		for (Object obj_lev2 : tree.getJSONArray(lev1)) {
+        			String lev2 = obj_lev2.toString();
+        			if (tree.has(lev2)) {
+        				for (Object obj_lev3 : tree.getJSONArray(lev2)) {
+        					sList.add(obj_lev3.toString());
+        					skipInstanceofList.add(obj_lev3.toString());
+        				}
+        			}
+        		}
+        	}
+        	bufferedWriter_baidu_subclassof.write(lev1.toString() + "\t" + StringUtils.join(sList, "::;") + "\n");
+        }
+        
+    	int pageCount = 0;
     	Set<String> tagListAll = new HashSet<String>();
     	Set<String> conceptListAll = new HashSet<String>();
     	Set<String> propertyListAll = new HashSet<String>();
+    	
         while (true) {
             line = bufferedReader.readLine();
             if (line == null) {
                 break;
             }
             pageCount += 1;
-            List<String> sList = new ArrayList<String>();
             JSONObject page = new JSONObject(line);
             JSONObject title = page.getJSONObject("title");
             String key = title.getString("h1") + "#####" + title.getString("h2");
             
-            bufferedWriter_baidu_abstract.write(key + "\t" + page.getString("description").replaceAll("\t", ""));
+            if (page.getString("description").equals("") == false) {
+            	bufferedWriter_baidu_abstract.write(key + "\t" + page.getString("description").replaceAll("\t", "") + "\n");
+            }
             
             JSONArray links = page.getJSONArray("links");
             sList.clear();
             for (int i = 0; i < links.length(); i += 1) {
             	sList.add(links.get(i).toString());
             }
-            bufferedWriter_baidu_innerLink.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
+            if (sList.size() != 0) {
+            	bufferedWriter_baidu_innerLink.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
+            }
             
             JSONArray tags = page.getJSONArray("tags");
             sList.clear();
@@ -372,20 +418,28 @@ public class BDKG {
             	sList.add(tags.get(i).toString());
             	tagListAll.add(tags.get(i).toString());
             }
-//            bufferedWriter_baidu_instance_tag.write(key + "\t" + StringUtils.join(sList, ";") + "\n");
+//            if (sList.size() != 0) {
+//            	bufferedWriter_baidu_instance_tag.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
+//            }
             
             JSONArray category = page.getJSONArray("category");
             sList.clear();
+            List<String> cList = new ArrayList<String>();
             for (int i = 0; i < category.length(); i += 1) {
             	sList.add(category.get(i).toString());
             	conceptListAll.add(category.get(i).toString());
+            	if (skipInstanceofList.contains(category.get(i).toString())) {
+            		cList.add(category.get(i).toString());
+            	}
             }
-            bufferedWriter_baidu_instance_concept.write(key + "\t" + StringUtils.join(sList, ";") + "\n");
+            if (sList.size() != 0) {
+            	bufferedWriter_baidu_instance_concept.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
+            }
+            if (cList.size() != 0) {
+            	bufferedWriter_baidu_instanceof.write(key + "\t" + StringUtils.join(cList, "::;") + "\n");
+            }
             
         	bufferedWriter_baidu_instanceList_all.write(key + "\n");
-        	
-//        	bufferedWriter_baidu_instanceof
-//        	bufferedWriter_baidu_subclassof
         	
         	JSONObject infobox = page.getJSONObject("infobox");
         	sList.clear();
@@ -393,9 +447,13 @@ public class BDKG {
         		sList.add(k + ":::" + infobox.getString(k));
         		propertyListAll.add(k);
         	}
-        	bufferedWriter_baidu_title_property.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
-        	        	
-        	bufferedWriter_baidu_url.write(key + "\t" + page.getString("url") + "\n");
+        	if (sList.size() != 0) {
+        		bufferedWriter_baidu_title_property.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");
+        	}
+        	
+        	if (page.getString("url").equals("") == false) {
+        		bufferedWriter_baidu_url.write(key + "\t" + page.getString("url") + "\n");
+        	}
         	
         	JSONObject synonym = page.getJSONObject("synonym");
         	sList.clear();
@@ -405,7 +463,9 @@ public class BDKG {
         			sList.add(sys);
         		}
         	}
-        	bufferedWriter_baidu_synonym.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");       	
+        	if (sList.size() != 0) {
+        		bufferedWriter_baidu_synonym.write(key + "\t" + StringUtils.join(sList, "::;") + "\n");       	
+        	}
         	
         	if (pageCount%100000 == 0) {
         		System.out.println("___" + pageCount);
@@ -415,26 +475,30 @@ public class BDKG {
 //        	bufferedWriter_baidu_tagList_all.write(s + "\n");
 //        }
         for (String s : conceptListAll) {
-        	bufferedWriter_baidu_conceptListAll_all.write(s + "\n");
+        	bufferedWriter_baidu_conceptList_all.write(s + "\n");
         }
         for (String s : propertyListAll) {
         	bufferedWriter_baidu_propertyList_all.write(s + "\n");
         }
+        
+        
+        
+        
         bufferedReader.close();
+        bufferedReader_taxonomy.close();
         bufferedWriter_baidu_abstract.close();
 //    	bufferedWriter_baidu_tagList_all.close();
-    	bufferedWriter_baidu_conceptListAll_all.close();
+    	bufferedWriter_baidu_conceptList_all.close();
     	bufferedWriter_baidu_innerLink.close();
 //    	bufferedWriter_baidu_instance_tag.close();
     	bufferedWriter_baidu_instanceList_all.close();
-    	bufferedWriter_baidu_instanceof.close();
     	bufferedWriter_baidu_propertyList_all.close();
-    	bufferedWriter_baidu_subclassof.close();
     	bufferedWriter_baidu_title_property.close();
     	bufferedWriter_baidu_url.close();
     	bufferedWriter_baidu_instance_concept.close();
-    	bufferedWriter_baidu_conceptListAll_all.close();
-
+    	bufferedWriter_baidu_synonym.close();
+    	bufferedWriter_baidu_instanceof.close();
+    	bufferedWriter_baidu_subclassof.close();
     }
     
     private LinkedHashMap<String, Integer> sortMap(Map<String, Integer> map, boolean HtoL){
