@@ -72,6 +72,7 @@
         <java classname="BaiduExtractor.BDKG" failonerror="true" fork="yes">
             <classpath refid="Xlore2.0.classpath"/>
             <sysproperty key="type" value="${type}" />
+        	<sysproperty key="categoryFile" value="${categoryFile}" />
             <sysproperty key="inputFile" value="${inputFile}" />
             <sysproperty key="outputFile" value="${outputFile}" />
             <sysproperty key="outputDir" value="${outputDir}" />
