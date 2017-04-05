@@ -24,9 +24,9 @@ Baidu数据处理
 >> ```
 > 输出：对应每个 .json 的抽取结果
 >> ```
->>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
+>>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{"from": "aaa||bbb", "to": "ccc"},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
 >>  ...[一行一条数据]
->>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
+>>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{"from": "aaa||bbb", "to": "ccc"},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
 >> ```
 
   执行命令
