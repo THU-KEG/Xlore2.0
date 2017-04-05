@@ -51,7 +51,7 @@ ant Dereplication
 
 执行命令
 ```Bash
-ant BDKG -Dtype=addCategory -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json" -DcategoryFile="/home/peter/BaiduBaikeDataProcess/new_baidu-instance-concept.dat" -DoutputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final_cate.result.json"
+ant BDKG -Dtype=addCategory -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json" -DsubinputFile="/home/peter/BaiduBaikeDataProcess/new_baidu-instance-concept.dat" -DoutputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final_cate.result.json"
 ```
 
 ##### 统计数据信息
@@ -123,5 +123,5 @@ ant BDKG -Dtype=getDumpFile -DinputFile="/home/peter/BaiduBaikeDataProcess/key_u
 
 执行命令
 ```Bash
-ant BDKG -Dtype=getSeparateAttrs -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json" -DoutputDir="/home/peter/BaiduBaikeDataProcess/separatedAttrs/"
+ant BDKG -Dtype=getSeparateAttrs -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json" -DsubinputFile="/home/peter/BaiduBaikeDataProcess/taxonomy/baidu-taxonomy-20160720.dat" -DoutputDir="/home/peter/BaiduBaikeDataProcess/separatedAttrs/"
 ```
