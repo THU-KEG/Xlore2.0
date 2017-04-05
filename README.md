@@ -24,9 +24,9 @@ Baidu数据处理
 >> ```
 > 输出：对应每个 .json 的抽取结果
 >> ```
->>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
+>>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{"from": "aaa||bbb", "to": "ccc"},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
 >>  ...[一行一条数据]
->>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
+>>  {"images":[],"references":[],"infobox":{},"description":"","title":{"h1":"","h2":""},"url":"","content":"...","tags":[],"outline":{},"synonym":{"from": "aaa||bbb", "to": "ccc"},"polyseme":[],"links":[],"statistics":{"edit_times":"","creator":"","pv":"","last_modified":""}}
 >> ```
 
   执行命令
@@ -45,6 +45,15 @@ ant Dereplication
 ```
 
 ### Step3. BDKG
+##### （添加旧Category信息到数据中）
+> 输入：Step2 生成的 .json 文件 + 旧Category数据（“h1#####h2\tCate1;Cate2;Cate3”）
+> 输出：融合旧Category信息的 .json 文件 [建议将输出重命名为输入文件的名字（key_url_title_final.result.json），为了下面的步骤能生成 Category 信息]
+
+执行命令
+```Bash
+ant BDKG -Dtype=addCategory -DinputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final.result.json" -DcategoryFile="/home/peter/BaiduBaikeDataProcess/new_baidu-instance-concept.dat" -DoutputFile="/home/peter/BaiduBaikeDataProcess/key_url_title_final_cate.result.json"
+```
+
 ##### 统计数据信息
 > 输入：Step2 生成的 .json 文件
 >> ```
